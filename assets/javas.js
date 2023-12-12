@@ -1,17 +1,43 @@
+// DOM Elements
 const cityInput = document.querySelector(".City-input");
-//call button
 const searchButton = document.querySelector(".search");
-// call div ul
 const forecastCard = document.querySelector(".card-ul");
-//call weather curret
 const WeatherCard = document.querySelector(".curret");
-//My Apis
+
+// API Key
 const apiKey = '39311b3ddc9f82f8cdec8e30beda1ea8';
 
-// Created card
-const createWeatherCard = (cityname, watheritem, index) => { 
+// Function to save city to local storage
+const saveCityToLocalStorage = (cityname) => {
+    localStorage.setItem('lastSearchedCity', cityname);
+};
+
+// Function to get last searched city from local storage
+const getLastSearchedCityFromLocalStorage = () => {
+    return localStorage.getItem('lastSearchedCity') || '';
+};
+
+// Function to update the UI with the last searched city
+const updateUIWithLastSearchedCity = () => {
+    const lastSearchedCity = getLastSearchedCityFromLocalStorage();
+    if (lastSearchedCity) {
+        cityInput.value = lastSearchedCity;
+        getCityCoordinate();
+    }
+};
+
+// Event listener for the search button
+searchButton.addEventListener("click", () => {
+    getCityCoordinate();
+    // Save the searched city to local storage
+    saveCityToLocalStorage(cityInput.value.trim());
+});
+
+// Function to create weather card HTML
+const createWeatherCard = (cityname, watheritem, index) => {
+    const tempInFahrenheit = ((watheritem.main.temp - 273.15) * 9/5 + 32).toFixed(2);
+
     if (index === 0) {
-        const tempInFahrenheit = ((watheritem.main.temp - 273.15) * 9/5 + 32).toFixed(2);
         return `<div class="details">
             <h2>${cityname} (${watheritem.dt_txt.split(" ")[0]})</h2>
             <h4>Temperature: ${tempInFahrenheit}°F </h4>
@@ -23,7 +49,6 @@ const createWeatherCard = (cityname, watheritem, index) => {
             <h4>${watheritem.weather[0].description}</h4>
         </div>`;
     } else {
-        const tempInFahrenheit = ((watheritem.main.temp - 273.15) * 9/5 + 32).toFixed(2);
         return `<li class="card-li">
             <h3>(${watheritem.dt_txt.split(" ")[0]})</h3>
             <img src="https://openweathermap.org/img/wn/${watheritem.weather[0].icon}@2x.png" alt="icono-weather">
@@ -34,7 +59,7 @@ const createWeatherCard = (cityname, watheritem, index) => {
     }
 };
 
-//details like city, Latitude and longitude
+// Function to fetch weather details
 const WeatherDetails = (cityname, lat, lon) => {
     const forecastApiUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}`;
 
@@ -48,13 +73,14 @@ const WeatherDetails = (cityname, lat, lon) => {
                     return uniqForeDays.push(forecastDate);
                 }
             });
-//Prevents the card from being duplicated html and javas
+
+            // Prevents the card from being duplicated in HTML and JavaScript
             cityInput.value = "";
             WeatherCard.innerHTML = "";
             forecastCard.innerHTML = "";
 
             daysForecast.forEach((watheritem, index) => {
-                if (index === 0) {             
+                if (index === 0) {
                     WeatherCard.insertAdjacentHTML("beforeend", createWeatherCard(cityname, watheritem, index));
                 } else {
                     forecastCard.insertAdjacentHTML("beforeend", createWeatherCard(cityname, watheritem, index));
@@ -66,7 +92,7 @@ const WeatherDetails = (cityname, lat, lon) => {
         });
 };
 
-//get location
+// Function to get location
 const getCityCoordinate = () => {
     const cityname = cityInput.value.trim();
     if (!cityname) return;
@@ -84,4 +110,5 @@ const getCityCoordinate = () => {
         });
 };
 
-searchButton.addEventListener("click", getCityCoordinate);
+// Call this function to check if there is a last searched city in local storage
+updateUIWithLastSearchedCity();

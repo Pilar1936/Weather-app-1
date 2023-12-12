@@ -1,4 +1,3 @@
-# Weather-app-1
 
 # weather-app
 ## Acceptance Criteria
